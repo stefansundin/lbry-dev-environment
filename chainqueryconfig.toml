@@ -1,0 +1,6 @@
+# https://github.com/lbryio/chainquery/blob/master/config/default/chainqueryconfig.toml
+
+debugmode=true
+lbrycrdurl="rpc://lbry:lbry@lbrycrd:9245"
+mysqldsn="root@tcp(mysql:3306)/chainquery"
+apimysqldsn="root@tcp(mysql:3306)/chainquery"

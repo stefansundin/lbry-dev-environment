@@ -1,0 +1,43 @@
+version: "3"
+services:
+
+  # See https://github.com/lbryio/snapshots/issues/2
+  # Get the snapshot and serve it to lbrycrd via this container.
+  # aws s3 cp s3://snapshots.lbry.com/blockchain/blockchain_snapshot_914289_v0.17.3.2_2021-02-16.tar.bz2 . --no-sign-request
+  nginx:
+    image: nginx
+    expose:
+      - 80
+    volumes:
+      - ./blockchain_snapshot_914289_v0.17.3.2_2021-02-16.tar.bz2:/usr/share/nginx/html/blockchain_snapshot_914289_v0.17.3.2_2021-02-16.tar.bz2:ro
+
+  # For some reason I have to reindex every time. :(
+  # Reindexing takes ~7 minutes.
+  lbrycrd:
+    image: lbry/lbrycrd:v0.17.3.2
+    expose:
+      - 9245
+      - 9246
+    environment:
+      # RUN_MODE: default
+      RUN_MODE: reindex
+      SNAPSHOT_URL: http://nginx/blockchain_snapshot_914289_v0.17.3.2_2021-02-16.tar.bz2
+      RPC_ALLOW_IP: "0.0.0.0/0"
+
+  chainquery:
+    image: lbry/chainquery:v2.4.0
+    ports:
+      - "5581:5279"
+      - "5279:5279"
+    volumes:
+      - ./chainqueryconfig.toml:/etc/lbry/chainqueryconfig.toml:ro
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    expose:
+      - 3306
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: "chainquery"
